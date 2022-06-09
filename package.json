@@ -1,0 +1,26 @@
+{
+  "name": "BCD-Assignment",
+  "version": "1.0.0",
+  "description": "Blockchain Demo written in TypeScript for Blockchain Development assignment.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:start": "tsc && npm run start:prod",
+    "start:prod": "node ./dist/index.js",
+    "build:dev": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ch10ew/BlockchainTS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ch10ew/BlockchainTS/issues"
+  },
+  "homepage": "https://github.com/Ch10ew/BlockchainTS#readme",
+  "devDependencies": {
+    "typescript": "^4.7.3"
+  }
+}
