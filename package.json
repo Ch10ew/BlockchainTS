@@ -4,8 +4,8 @@
   "description": "Blockchain Demo written in TypeScript for Blockchain Development assignment.",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "build:start": "tsc && npm run start:prod",
+    "build": "tsc && resolve-tspaths",
+    "build:start": "npm run build && npm run start:prod",
     "start:prod": "node ./dist/index.js",
     "build:dev": "tsc -w"
   },
@@ -21,6 +21,9 @@
   },
   "homepage": "https://github.com/Ch10ew/BlockchainTS#readme",
   "devDependencies": {
+    "@types/node": "^18.0.0",
+    "git-cz": "^4.9.0",
+    "resolve-tspaths": "^0.6.0",
     "typescript": "^4.7.3"
   }
 }
