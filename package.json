@@ -22,8 +22,12 @@
   "homepage": "https://github.com/Ch10ew/BlockchainTS#readme",
   "devDependencies": {
     "@types/node": "^18.0.0",
+    "@types/uuid": "^8.3.4",
     "git-cz": "^4.9.0",
     "resolve-tspaths": "^0.6.0",
     "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "uuid": "^8.3.2"
   }
 }
