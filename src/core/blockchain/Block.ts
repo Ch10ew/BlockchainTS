@@ -2,27 +2,16 @@ import Hasher from '@utils/hasher';
 import { IUser } from '../user/user';
 import { v4 } from 'uuid';
 import { createHash } from 'crypto';
+import { MerkleTree } from './MerkleTree';
+import { Transaction } from '@prisma/client';
 
-export interface IBlockData {
-  index: number;
-  timestamp: Date;
-  transaction: ITransactionData | null;
-  previousBlockHash: string;
-}
-
-export interface ITransactionData {
-  from: IUser;
-  to: IUser;
-  artworkId: string;
-  amount: number;
-}
-
-export class Block implements IBlockData {
+export class Block {
   constructor(
     public readonly index: number,
     public readonly timestamp: Date,
-    public readonly transaction: ITransactionData | null,
-    public readonly previousBlockHash: string
+    public readonly transaction: Transaction | null,
+    public readonly previousBlockHash: string,
+    public readonly merkleRoot?: MerkleTree
   ) {}
 
   static generateGenesisBlock() {

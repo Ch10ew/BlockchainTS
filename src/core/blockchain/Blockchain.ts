@@ -1,24 +1,38 @@
-import { Block, ITransactionData } from './Block';
+import { Block } from './Block';
 import { MerkleTree } from './MerkleTree';
-import { v4 as uuidv4 } from 'uuid';
-import Hasher from '@utils/hasher';
+import { writeFile } from 'fs';
 import { createVerify, Sign } from 'crypto';
+import path from 'path';
+import { getAllTransactions } from 'src/routes/transact';
+import { Transaction } from '@prisma/client';
 
 export class Blockchain {
+  static instance: Blockchain | undefined;
   chain: Block[] = [];
-  merkleTree: MerkleTree | undefined;
   genesis: Block | undefined;
 
-  constructor() {
+  private constructor() {
     this.genesis = Block.generateGenesisBlock();
     this.chain.push();
+    this.distribute();
   }
 
-  addBlock(
-    newTransaction: ITransactionData,
+  static getInstance() {
+    if (this.instance) return this.instance;
+    return new Blockchain();
+  }
+
+  static fromJSON() {
+    const json = require('./blockchain.json');
+    this.instance = Object.assign(new Blockchain(), json);
+    return this.instance;
+  }
+
+  async addBlock(
+    newTransaction: Transaction,
     senderPublicKey: string,
     signature: string
-  ): void {
+  ): Promise<void> {
     const verifier = createVerify('SHA256');
     verifier.update(JSON.stringify(newTransaction));
 
@@ -30,13 +44,11 @@ export class Blockchain {
           this.getSize(),
           new Date(),
           newTransaction,
-          this.lastBlock().getHash()
+          this.lastBlock().getHash(),
+          new MerkleTree(await getAllTransactions())
         )
       );
     }
-    const tempList: ITransactionData[] = [newTransaction];
-    this.merkleTree = new MerkleTree(tempList);
-    const date = new Date();
   }
 
   lastBlock() {
@@ -45,5 +57,13 @@ export class Blockchain {
 
   getSize(): number {
     return this.chain.length;
+  }
+
+  distribute() {
+    writeFile(
+      path.resolve('./blockchain.json'),
+      JSON.stringify(this),
+      () => {}
+    );
   }
 }

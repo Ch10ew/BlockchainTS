@@ -1,12 +1,12 @@
+import { Transaction } from '@prisma/client';
 import Hasher from '@utils/hasher';
-import { ITransactionData } from './Block';
 
 export class MerkleNode {
   public hash: string | undefined;
   constructor(
     public leftNode: MerkleNode | undefined = undefined,
     public rightNode: MerkleNode | undefined = undefined,
-    private readonly data: ITransactionData | undefined = undefined
+    private readonly data: Transaction | undefined = undefined
   ) {
     if (!leftNode && !rightNode) {
       this.hash = Hasher.sha256(this.data!);
@@ -19,12 +19,12 @@ export class MerkleNode {
 export class MerkleTree {
   root: MerkleNode | undefined;
   size: number | undefined;
-  constructor(nodes: ITransactionData[]) {
+  constructor(nodes: Transaction[]) {
     this.size = Math.ceil(Math.log2(nodes.length));
     this.root = MerkleTree.buildTree(nodes);
   }
 
-  static buildTree(nodes: ITransactionData[]): MerkleNode {
+  static buildTree(nodes: Transaction[]): MerkleNode {
     const nodeCopy = [...nodes];
     let finalNodes: MerkleNode[] = [];
     if (!(nodes.length % 2)) nodeCopy.push(nodes[nodes.length - 1]);
