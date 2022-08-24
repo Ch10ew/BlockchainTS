@@ -7,7 +7,8 @@
     "build": "tsc && resolve-tspaths",
     "build:start": "npm run build && npm run start:prod",
     "start:prod": "node ./dist/index.js",
-    "build:dev": "tsc -w"
+    "build:dev": "tsc -w",
+    "run:dev": "npx nodemon ./src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -15,13 +16,16 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Ch10ew/BlockchainTS/issues"
   },
   "homepage": "https://github.com/Ch10ew/BlockchainTS#readme",
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.13",
+    "@types/express-session": "^1.17.5",
+    "@types/multer": "^1.4.7",
     "@types/node": "^18.7.12",
     "@types/uuid": "^8.3.4",
     "git-cz": "^4.9.0",
@@ -32,7 +36,12 @@
   },
   "dependencies": {
     "@prisma/client": "^4.2.1",
+    "@quixo3/prisma-session-store": "^3.1.9",
+    "bcrypt": "^5.0.1",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1",
     "uuid": "^8.3.2"
   }
 }

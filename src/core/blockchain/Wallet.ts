@@ -1,8 +1,8 @@
-import { createSign, generateKeyPairSync } from 'crypto';
+import { createSign, generateKeyPairSync, KeyObject } from 'crypto';
 
 export class Wallet {
-  public publicKey: string;
-  public privateKey: string;
+  public publicKey: KeyObject & Buffer & string;
+  public privateKey: KeyObject & Buffer & string;
   constructor() {
     // @ts-ignore
     const keypair = generateKeyPairSync('rsa', {
@@ -10,6 +10,7 @@ export class Wallet {
       publicKeyEncoding: { type: 'spki', format: 'pem' },
       privateKeyEndcoding: { type: 'pkcs8', format: 'pem' },
     });
+    console.log(keypair.privateKey);
     this.privateKey = keypair.privateKey;
     this.publicKey = keypair.publicKey;
   }

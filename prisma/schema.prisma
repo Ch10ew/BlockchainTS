@@ -10,27 +10,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
+
 model User {
-  id         String   @id @default(uuid())
-  username   String
-  password   String
-  publicKey  String
-  privateKey String
-  userType   UserType
+  id       String   @id @default(uuid())
+  username String   @unique
+  password String
+  userType UserType
 
   Artwork         Artwork[]
   fromTransaction Transaction[] @relation("fromUser")
   toTransaction   Transaction[] @relation("toUser")
+  fromRequest     Request[]     @relation("fromRequest")
+  toRequest       Request[]     @relation("toRequest")
 }
 
 model Artwork {
   id          String @id @default(uuid())
-  label       String
+  label       String @unique
   artworkPath String
 
   artistId    String
   artist      User          @relation(fields: [artistId], references: [id])
   Transaction Transaction[]
+  Request     Request[]
 }
 
 model Transaction {
@@ -45,7 +53,25 @@ model Transaction {
   to        User    @relation(name: "toUser", fields: [toId], references: [id])
 }
 
+model Request {
+  id     String        @id @default(uuid())
+  status RequestStatus
+
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id])
+  fromId    String
+  from      User    @relation(name: "fromRequest", fields: [fromId], references: [id])
+  toId      String
+  to        User    @relation(name: "toRequest", fields: [toId], references: [id])
+}
+
 enum UserType {
   ARTIST
   COLLECTOR
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
