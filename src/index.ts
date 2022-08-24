@@ -1,10 +1,11 @@
-import Hasher from '@utils/hasher';
+import express from 'express';
 
-console.log('hello world');
-console.log('hi ricey');
-console.log(
-  Hasher.md5({
-    name: 'blockchain',
-    idk: 'smtg',
-  })
-);
+const app = express();
+const router = express.Router();
+
+app.use(express.json());
+const port = process.env.PORT ?? 8000;
+
+app.listen(port, () => {
+  console.log('App listening at port ' + port);
+});
