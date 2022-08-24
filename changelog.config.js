@@ -15,7 +15,7 @@ module.exports = {
   maxMessageLength: 128,
   minMessageLength: 3,
   questions: ['type', 'scope', 'subject', 'body', 'breaking', 'issues'],
-  scopes: ['config', 'hasher'],
+  scopes: ['config', 'hasher', 'blockchain'],
   types: {
     chore: {
       description: 'Build process or auxiliary tool changes',
