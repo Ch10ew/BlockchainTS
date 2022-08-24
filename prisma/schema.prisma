@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  username   String
+  password   String
+  publicKey  String
+  privateKey String
+  userType   UserType
+
+  Artwork         Artwork[]
+  fromTransaction Transaction[] @relation("fromUser")
+  toTransaction   Transaction[] @relation("toUser")
+}
+
+model Artwork {
+  id          String @id @default(uuid())
+  label       String
+  artworkPath String
+
+  artistId    String
+  artist      User          @relation(fields: [artistId], references: [id])
+  Transaction Transaction[]
+}
+
+model Transaction {
+  id             String @id @default(uuid())
+  blockchainHash String
+
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id])
+  fromId    String
+  from      User    @relation(name: "fromUser", fields: [fromId], references: [id])
+  toId      String
+  to        User    @relation(name: "toUser", fields: [toId], references: [id])
+}
+
+enum UserType {
+  ARTIST
+  COLLECTOR
+}
