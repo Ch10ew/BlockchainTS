@@ -41,6 +41,10 @@ const router = express.Router();
 
 router.get('/:id', async (req, res) => {
   const artwork = await prisma.artwork.findUnique({
+    include: {
+      artist: true,
+      owner: true,
+    },
     where: {
       id: req.params.id,
     },
@@ -89,13 +93,11 @@ router.get('/', async (req, res) => {
       },
     }),
   });
-  console.log(artworks);
   const arts = artworks.map((x) => {
     const art = JSON.parse(JSON.stringify(x));
     delete art.artist.password;
     return art;
   });
-  console.log(arts);
   res.json(arts).end();
 });
 

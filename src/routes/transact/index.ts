@@ -62,6 +62,13 @@ router.get('/', async (req, res) => {
     if (req.query.status) {
       queryParams.push({ status: req.query.status });
     }
+    if (req.query.notStatus) {
+      queryParams.push({
+        status: {
+          not: req.query.notStatus,
+        },
+      });
+    }
     if (req.query.fromId) {
       queryParams.push({ fromId: req.query.fromId });
     }
@@ -94,17 +101,25 @@ router.get('/', async (req, res) => {
       );
     }
   }
+  console.log(queryParams);
   const request = await prisma.request.findMany({
     include: {
       from: true,
       to: true,
       artwork: true,
     },
-    ...(!isEmpty(req.query) && {
-      where: {
-        OR: queryParams,
-      },
-    }),
+    // ...(!isEmpty(req.query) && {
+    //   where: {
+    //     OR: queryParams,
+    //   },
+    // }),
+    where: {
+      OR: [
+        { status: { not: 'PENDING' } },
+        { fromId: 'ff943052-e07a-4b25-a409-1081b83325ba' },
+        { toId: 'ff943052-e07a-4b25-a409-1081b83325ba' },
+      ],
+    },
   });
   res.json(request);
 });
@@ -196,7 +211,7 @@ router.get('/cert/:id', async (req, res) => {
       to: true,
     },
   });
-  if (!latestTransaction) res.sendStatus(404);
+  if (!latestTransaction) return res.sendStatus(404).end();
   res.json({
     data: latestTransaction,
   });
@@ -250,8 +265,6 @@ router.get('/transaction', async (req, res) => {
       },
     }),
   });
-  console.log(trans);
-  res.json(trans);
 });
 
 export default router;

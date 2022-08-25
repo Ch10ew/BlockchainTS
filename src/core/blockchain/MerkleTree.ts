@@ -64,10 +64,7 @@ export class MerkleTree {
       (x) => new MerkleNode(undefined, undefined, x)
     );
     const proofs = this.getMerkleProof(allTransactionNodes, transactionNode);
-    console.log(proofs);
     const root = this.proofMerkleRoot(proofs, transactionNode);
-    console.log(root.hash);
-    console.log(this.root?.hash);
     return this.root?.hash === root.hash;
   }
 
@@ -85,11 +82,9 @@ export class MerkleTree {
       const merkle = new MerkleNode(nodes[i], nodes[i + 1]);
       tree.push(merkle);
       if (merkle.leftNode?.hash === merkleNode.hash) {
-        console.log('left');
         proof.push({ position: 'left', node: merkle.rightNode! });
         next = merkle;
       } else if (merkle.rightNode?.hash === merkleNode.hash) {
-        console.log('right');
         proof.push({ position: 'right', node: merkle.leftNode! });
         next = merkle;
       }

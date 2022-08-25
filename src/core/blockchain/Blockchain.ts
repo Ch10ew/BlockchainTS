@@ -33,7 +33,6 @@ export class Blockchain {
     const json = require(path.resolve('./blockchain.json'));
     if (isEmpty(json)) return this.distribute();
     this.chain = json.chain.map((x) => {
-      console.log(x.transaction);
       const trans: Transaction | null = x.transaction
         ? {
             id: x.transaction.id,
@@ -49,7 +48,6 @@ export class Blockchain {
     const allTrans = await getAllTransactions();
     this.merkleRootHash = json.merkleRootHash;
     this.distribute();
-    console.log(Blockchain.instance);
 
     return Blockchain.instance;
   }
@@ -114,7 +112,6 @@ export class Blockchain {
       (x) => new MerkleNode(undefined, undefined, x)
     );
     const proofs = this.getMerkleProof(allTransactionNodes, transactionNode);
-    console.log(proofs);
     const root = this.proofMerkleRoot(proofs, transactionNode);
     return this.merkleRootHash === root.hash;
   }
@@ -133,11 +130,9 @@ export class Blockchain {
       const merkle = new MerkleNode(nodes[i], nodes[i + 1]);
       tree.push(merkle);
       if (merkle.leftNode?.hash === merkleNode.hash) {
-        console.log('left');
         proof.push({ position: 'left', node: merkle.rightNode! });
         next = merkle;
       } else if (merkle.rightNode?.hash === merkleNode.hash) {
-        console.log('right');
         proof.push({ position: 'right', node: merkle.leftNode! });
         next = merkle;
       }
