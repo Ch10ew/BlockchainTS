@@ -11,6 +11,7 @@ import path from 'path';
 import { mkdirSync, readdirSync } from 'fs';
 import { Blockchain } from './core/blockchain/Blockchain';
 import 'reflect-metadata';
+import cors from 'cors';
 
 declare module 'express-session' {
   interface SessionData {
@@ -29,6 +30,7 @@ Blockchain.getInstance().fromJSON();
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(
