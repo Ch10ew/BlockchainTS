@@ -3,6 +3,7 @@ import { Artwork, PrismaClient, RequestStatus } from '@prisma/client';
 import { createSign } from 'crypto';
 import { getPrivateKey, getPublicKey } from '../../utils/keys/keyUtils';
 import { Blockchain } from '../../core/blockchain/Blockchain';
+import { isEmpty } from 'lodash';
 
 type CreateRequestData = {
   artworkId: string;
@@ -55,14 +56,17 @@ export const transferArtwork = async (
   });
 };
 
-router.get('', (req, res) => {
+router.get('/', async (req, res) => {
   let queryParams: any = [];
-  if (req.query) {
+  if (!isEmpty(req.query)) {
+    if (req.query.status) {
+      queryParams.push({ status: req.query.status });
+    }
     if (req.query.fromId) {
-      queryParams.push(req.query.fromId);
+      queryParams.push({ fromId: req.query.fromId });
     }
     if (req.query.toId) {
-      queryParams.push(req.query.toId);
+      queryParams.push({ toId: req.query.toId });
     }
     if (req.query.q) {
       queryParams.push(
@@ -90,48 +94,56 @@ router.get('', (req, res) => {
       );
     }
   }
-  return prisma.transaction.findMany({
+  const request = await prisma.request.findMany({
     include: {
       from: true,
       to: true,
       artwork: true,
     },
-    ...(req.query && {
+    ...(!isEmpty(req.query) && {
       where: {
         OR: queryParams,
       },
     }),
   });
+  res.json(request);
 });
 
-router.post('/request', async (req, res) => {
+router.post('/', async (req, res) => {
   if (!req.body.artworkId || !req.body.buyerId) {
     res.sendStatus(403);
     return;
   }
-  const artwork = await prisma.artwork.findUnique({
-    where: {
-      id: req.body.artworkId,
-    },
-    include: {
-      artist: true,
-    },
-  });
-  if (!artwork) {
+  const [user, artwork] = await prisma.$transaction([
+    prisma.user.findUnique({
+      where: {
+        id: req.body.buyerId,
+      },
+    }),
+    prisma.artwork.findUnique({
+      where: {
+        id: req.body.artworkId,
+      },
+      include: {
+        artist: true,
+      },
+    }),
+  ]);
+  if (!artwork || !user) {
     res.sendStatus(404);
     return;
   }
   const request = await prisma.request.create({
     data: {
       fromId: req.body.buyerId,
-      toId: artwork.artist.id,
+      toId: artwork.ownerId,
       artworkId: artwork.id,
     },
   });
   res.json(request);
 });
 
-router.put('/request/response', async (req, res) => {
+router.put('/response', async (req, res) => {
   if (!req.body.requestId || !req.body.status) {
     return res.sendStatus(404);
   }
@@ -147,7 +159,7 @@ router.put('/request/response', async (req, res) => {
     },
   });
   if (request.status === RequestStatus.ACCEPTED) {
-    await transferArtwork(request.artwork, request.fromId, request.toId);
+    await transferArtwork(request.artwork, request.toId, request.fromId);
     res.json(request);
   }
 });
@@ -161,6 +173,16 @@ router.get('/proof/:id', async (req, res) => {
     req.params.id
   );
   res.json({ isValid });
+});
+
+router.get('/:id', async (req, res) => {
+  const trans = await prisma.artwork.findUnique({
+    where: {
+      id: req.params.id,
+    },
+  });
+  if (trans) return res.sendStatus(404);
+  res.json({ trans });
 });
 
 router.get('/cert/:id', async (req, res) => {
@@ -179,4 +201,57 @@ router.get('/cert/:id', async (req, res) => {
     data: latestTransaction,
   });
 });
+
+router.get('/transaction', async (req, res) => {
+  console.log('hi');
+  let queryParams: any = [];
+  if (!isEmpty(req.query)) {
+    if (req.query.fromId) {
+      queryParams.push({ fromId: req.query.fromId });
+    }
+    if (req.query.toId) {
+      queryParams.push({ toId: req.query.toId });
+    }
+    if (req.query.q) {
+      queryParams.push(
+        {
+          from: {
+            username: {
+              contains: req.query.q! as string,
+            },
+          },
+        },
+        {
+          to: {
+            username: {
+              contains: req.query.q! as string,
+            },
+          },
+        },
+        {
+          artwork: {
+            label: {
+              contains: req.query.q! as string,
+            },
+          },
+        }
+      );
+    }
+  }
+  const trans = await prisma.transaction.findMany({
+    include: {
+      from: true,
+      to: true,
+      artwork: true,
+    },
+    ...(!isEmpty(req.query) && {
+      where: {
+        OR: queryParams,
+      },
+    }),
+  });
+  console.log(trans);
+  res.json(trans);
+});
+
 export default router;
