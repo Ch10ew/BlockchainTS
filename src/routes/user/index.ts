@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', async (req, res) => {
   req.session?.destroy(() => {
-    res.clearCookie('connect.sid', { path: '/' });
+    res.cookie('connect.sid', -1);
     res.sendStatus(200).end();
   });
 });
