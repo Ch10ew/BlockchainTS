@@ -89,8 +89,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', async (req, res) => {
-  req.session?.destroy(() => res.sendStatus(500).end());
-  res.sendStatus(200).end();
+  req.session?.destroy(() => {
+    res.sendStatus(200).end();
+  });
 });
 
 router.get('/:id', async (req, res) => {
