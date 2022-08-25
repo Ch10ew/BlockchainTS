@@ -81,6 +81,7 @@ router.get('/', async (req, res) => {
   const artworks = await prisma.artwork.findMany({
     include: {
       artist: true,
+      owner: true,
     },
     ...(!isEmpty(req.query) && {
       where: {
