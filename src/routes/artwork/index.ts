@@ -114,7 +114,7 @@ router.post('/upload', upload.single('artworkImg'), async (req, res) => {
   const { label }: CreateArtworkData = req.body;
   const artwork = await prisma.artwork.create({
     data: {
-      id: path.basename(req.file?.filename as string),
+      id: path.parse(req.file?.filename as string).name,
       label,
       artworkPath: url + '/image/' + req.file?.filename,
       artistId: userSession.id,
