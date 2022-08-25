@@ -57,69 +57,67 @@ export const transferArtwork = async (
 };
 
 router.get('/', async (req, res) => {
-  let queryParams: any = [];
+  let statusQuery: any;
+  let fromQuery: any;
+  let toQuery: any;
   if (!isEmpty(req.query)) {
     if (req.query.status) {
-      queryParams.push({ status: req.query.status });
+      statusQuery = { status: req.query.status };
     }
     if (req.query.notStatus) {
-      queryParams.push({
+      statusQuery = {
         status: {
           not: req.query.notStatus,
         },
-      });
+      };
     }
     if (req.query.fromId) {
-      queryParams.push({ fromId: req.query.fromId });
+      fromQuery = { fromId: req.query.fromId };
     }
     if (req.query.toId) {
-      queryParams.push({ toId: req.query.toId });
+      toQuery = { toId: req.query.toId };
     }
-    if (req.query.q) {
-      queryParams.push(
-        {
-          from: {
-            username: {
-              contains: req.query.q! as string,
-            },
-          },
-        },
-        {
-          to: {
-            username: {
-              contains: req.query.q! as string,
-            },
-          },
-        },
-        {
-          artwork: {
-            label: {
-              contains: req.query.q! as string,
-            },
-          },
-        }
-      );
-    }
+    // if (req.query.q) {
+    //   queryParams.push(
+    //     {
+    //       from: {
+    //         username: {
+    //           contains: req.query.q! as string,
+    //         },
+    //       },
+    //     },
+    //     {
+    //       to: {
+    //         username: {
+    //           contains: req.query.q! as string,
+    //         },
+    //       },
+    //     },
+    //     {
+    //       artwork: {
+    //         label: {
+    //           contains: req.query.q! as string,
+    //         },
+    //       },
+    //     }
+    // );
+    // }
   }
-  console.log(queryParams);
+
   const request = await prisma.request.findMany({
     include: {
       from: true,
       to: true,
       artwork: true,
     },
-    // ...(!isEmpty(req.query) && {
-    //   where: {
-    //     OR: queryParams,
-    //   },
-    // }),
-    where: {
-      OR: [
-        { status: { not: 'PENDING' } },
-        { fromId: 'ff943052-e07a-4b25-a409-1081b83325ba' },
-        { toId: 'ff943052-e07a-4b25-a409-1081b83325ba' },
-      ],
-    },
+
+    ...(!isEmpty(req.query) && {
+      where: {
+        ...(req.query.status && statusQuery),
+        ...(req.query.fromId && fromQuery),
+        ...(req.query.toId && toQuery),
+      },
+    }),
   });
   res.json(request);
 });
@@ -188,6 +186,27 @@ router.get('/proof/:id', async (req, res) => {
     req.params.id
   );
   res.json({ isValid });
+});
+
+router.get('/finished', async (req, res) => {
+  if (!req.query.userId) return res.sendStatus(404);
+  const requests = await prisma.request.findMany({
+    where: {
+      OR: [
+        { fromId: req.query.userId as string },
+        { toId: req.query.userId as string },
+      ],
+      status: {
+        not: 'PENDING',
+      },
+    },
+    include: {
+      artwork: true,
+      from: true,
+      to: true,
+    },
+  });
+  res.json(requests);
 });
 
 router.get('/:id', async (req, res) => {
