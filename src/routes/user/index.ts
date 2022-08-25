@@ -89,6 +89,11 @@ router.post('/login', async (req, res) => {
   res.sendStatus(404).end();
 });
 
+router.post('/logout', async (req, res) => {
+  req.session?.destroy(() => res.sendStatus(500).end());
+  res.sendStatus(200).end();
+});
+
 router.get('/:id', async (req, res) => {
   const user = await prisma.user.findUnique({
     where: {
