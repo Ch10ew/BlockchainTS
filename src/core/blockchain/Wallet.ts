@@ -10,7 +10,6 @@ export class Wallet {
       publicKeyEncoding: { type: 'spki', format: 'pem' },
       privateKeyEndcoding: { type: 'pkcs8', format: 'pem' },
     });
-    console.log(keypair.privateKey);
     this.privateKey = keypair.privateKey;
     this.publicKey = keypair.publicKey;
   }

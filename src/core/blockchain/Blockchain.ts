@@ -5,29 +5,39 @@ import { createVerify, KeyObject, Sign } from 'crypto';
 import path from 'path';
 import { getAllTransactions } from '../../routes/transact';
 import { Transaction } from '@prisma/client';
+import { isEmpty } from 'lodash';
 
 export class Blockchain {
   static instance = new Blockchain();
   chain: Block[] = [];
   genesis: Block | undefined;
+  merkleTree: MerkleTree | undefined;
 
   private constructor() {
     this.genesis = Block.generateGenesisBlock();
     this.chain.push(this.genesis);
-    this.distribute();
   }
 
   static getInstance() {
     if (this.instance) return this.instance;
     this.instance = new Blockchain();
-    console.log(this.instance);
     return this.instance;
   }
 
-  static fromJSON() {
-    const json = require('./blockchain.json');
-    this.instance = Object.assign(new Blockchain(), json);
-    return this.instance;
+  fromJSON() {
+    const json = require(path.resolve('./blockchain.json'));
+    if (isEmpty(json)) return this.distribute();
+    this.chain = json.chain.map(
+      (x) => new Block(x.index, x.timestamp, x.transaction, x.previousBlockHash)
+    );
+    this.genesis = json.genesis;
+    this.merkleTree = new MerkleTree(
+      this.chain.map((x) => x.transaction as Transaction)
+    );
+    this.distribute;
+    console.log(Blockchain.instance);
+
+    return Blockchain.instance;
   }
 
   async addBlock(
@@ -45,13 +55,14 @@ export class Blockchain {
     );
     if (isValid) {
       const trans = await getAllTransactions();
+      this.merkleTree = new MerkleTree(trans);
+
       this.chain.push(
         new Block(
           this.getSize(),
           new Date(),
           newTransaction,
-          this.lastBlock().getHash(),
-          new MerkleTree(trans)
+          this.lastBlock().getHash()
         )
       );
       this.distribute();

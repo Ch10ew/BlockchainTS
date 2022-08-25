@@ -4,14 +4,14 @@ import { v4 } from 'uuid';
 import { createHash } from 'crypto';
 import { MerkleTree } from './MerkleTree';
 import { Transaction } from '@prisma/client';
+import { Type } from 'class-transformer';
 
 export class Block {
   constructor(
     public readonly index: number,
     public readonly timestamp: Date,
     public readonly transaction: Transaction | null,
-    public readonly previousBlockHash: string,
-    public readonly merkleRoot?: MerkleTree
+    public readonly previousBlockHash: string
   ) {}
 
   static generateGenesisBlock() {

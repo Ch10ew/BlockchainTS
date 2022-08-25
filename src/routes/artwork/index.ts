@@ -105,7 +105,6 @@ router.post('/upload', upload.single('artworkImg'), async (req, res) => {
     res.sendStatus(500).end();
     return;
   }
-  console.log(Blockchain);
 
   const url = req.protocol + '://' + req.get('host');
   const { label }: CreateArtworkData = req.body;

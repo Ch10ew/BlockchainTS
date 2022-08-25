@@ -2,12 +2,15 @@ import express from 'express';
 import IndexRouter from './routes/index';
 import UserRouter from './routes/user';
 import ArtworkRouter from './routes/artwork';
+import RequestRouter from './routes/transact';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { PrismaClient, UserType } from '@prisma/client';
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import path from 'path';
 import { mkdirSync, readdirSync } from 'fs';
+import { Blockchain } from './core/blockchain/Blockchain';
+import 'reflect-metadata';
 
 declare module 'express-session' {
   interface SessionData {
@@ -21,6 +24,8 @@ declare module 'express-session' {
 mkdirSync(path.resolve(__dirname, `./public/upload`), {
   recursive: true,
 });
+
+Blockchain.getInstance().fromJSON();
 
 const app = express();
 
@@ -46,6 +51,7 @@ app.use('/image', express.static(path.join(__dirname, './public/upload')));
 app.use('/', IndexRouter);
 app.use('/user', UserRouter);
 app.use('/artwork', ArtworkRouter);
+app.use('/request', RequestRouter);
 
 const port = process.env.PORT ?? 8000;
 

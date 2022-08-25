@@ -38,7 +38,6 @@ router.post('/signup', async (req, res) => {
   }
   const salt = await genSalt(10);
   const hashedPassowrd = await hash(password, salt);
-
   const wallet = new Wallet();
   const user = await prisma.user.create({
     data: {

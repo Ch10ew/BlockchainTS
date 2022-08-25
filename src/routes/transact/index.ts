@@ -16,6 +16,13 @@ export const getAllTransactions = async () => {
   return prisma.transaction.findMany();
 };
 
+export const findTransactionById = async (transctionId: string) =>
+  await prisma.transaction.findUnique({
+    where: {
+      id: transctionId,
+    },
+  });
+
 export const transferArtwork = async (
   artwork: Artwork,
   ownerId: string,
@@ -143,4 +150,15 @@ router.put('/request/response', async (req, res) => {
   }
 });
 
+router.get('/blockchain', (req, res) =>
+  res.json(Blockchain.getInstance().chain)
+);
+
+router.get('/proof/:id', (req, res) => {
+  res.json({
+    isValid: Blockchain.getInstance().merkleTree?.proofTransaction(
+      req.params.id
+    ),
+  });
+});
 export default router;
