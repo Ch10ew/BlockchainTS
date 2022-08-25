@@ -2,6 +2,11 @@ import { Transaction } from '@prisma/client';
 import { findTransactionById, getAllTransactions } from '../../routes/transact';
 import Hasher from '../../utils/hasher';
 
+type proof = {
+  position: 'left' | 'right';
+  node: MerkleNode;
+};
+
 export class MerkleNode {
   public hash: string | undefined;
   private proof: any;
@@ -49,8 +54,6 @@ export class MerkleTree {
     const t = allTransactions.filter(
       (x) => x.id === transactionId
     )[0] as Transaction;
-    console.log(t);
-    console.log(transaction);
 
     const transactionNode = new MerkleNode(
       undefined,
@@ -61,6 +64,7 @@ export class MerkleTree {
       (x) => new MerkleNode(undefined, undefined, x)
     );
     const proofs = this.getMerkleProof(allTransactionNodes, transactionNode);
+    console.log(proofs);
     const root = this.proofMerkleRoot(proofs, transactionNode);
     console.log(root.hash);
     console.log(this.root?.hash);
@@ -70,29 +74,34 @@ export class MerkleTree {
   private getMerkleProof(
     allMerkleNodes: MerkleNode[],
     merkleNode: MerkleNode,
-    proof: any[][] = []
+    proof: proof[] = []
   ) {
     if (allMerkleNodes.length === 1) return proof;
-    console.log(allMerkleNodes.length);
+    let next = merkleNode;
     const nodes = [...allMerkleNodes];
     const tree: MerkleNode[] = [];
     if (nodes.length % 2 !== 0) nodes.push(nodes[nodes.length - 1]);
     for (let i = 0; i < nodes.length; i += 2) {
       const merkle = new MerkleNode(nodes[i], nodes[i + 1]);
       tree.push(merkle);
-      if (merkle.leftNode === merkleNode)
-        proof.push(['leftNode', merkle.leftNode]);
-      else if (merkle.rightNode === merkleNode)
-        proof.push(['rightNode', merkle.rightNode]);
+      if (merkle.leftNode?.hash === merkleNode.hash) {
+        console.log('left');
+        proof.push({ position: 'left', node: merkle.rightNode! });
+        next = merkle;
+      } else if (merkle.rightNode?.hash === merkleNode.hash) {
+        console.log('right');
+        proof.push({ position: 'right', node: merkle.leftNode! });
+        next = merkle;
+      }
     }
-    return this.getMerkleProof(tree, merkleNode, proof);
+    return this.getMerkleProof(tree, next, proof);
   }
 
-  private proofMerkleRoot(proof: any[][], merkleNode: MerkleNode) {
-    return proof.reduce((root, [key, value]) => {
-      return key === 'leftNode'
-        ? new MerkleNode(value, root)
-        : new MerkleNode(root, value);
+  private proofMerkleRoot(proof: proof[], merkleNode: MerkleNode) {
+    return proof.reduce((root, { position, node }, i) => {
+      return position === 'right'
+        ? new MerkleNode(node, root)
+        : new MerkleNode(root, node);
     }, merkleNode);
   }
 }

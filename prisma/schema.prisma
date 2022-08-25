@@ -45,7 +45,8 @@ model Artwork {
 }
 
 model Transaction {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   artworkId String
   artwork   Artwork @relation(fields: [artworkId], references: [id])

@@ -45,7 +45,7 @@ router.get('/:id', async (req, res) => {
     },
   });
   if (!artwork) {
-    res.sendStatus(404).json({ error: 'Artowrk not found' }).end();
+    res.status(404).json({ error: 'Artowrk not found' }).end();
     return;
   }
   res.json(artwork).end();

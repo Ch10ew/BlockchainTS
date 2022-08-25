@@ -13,7 +13,9 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 export const getAllTransactions = async () => {
-  return prisma.transaction.findMany();
+  return prisma.transaction.findMany({
+    orderBy: [{ createdAt: 'asc' }],
+  });
 };
 
 export const findTransactionById = async (transctionId: string) =>
@@ -156,9 +158,7 @@ router.get('/blockchain', (req, res) =>
 
 router.get('/proof/:id', (req, res) => {
   res.json({
-    isValid: Blockchain.getInstance().merkleTree?.proofTransaction(
-      req.params.id
-    ),
+    isValid: Blockchain.getInstance().proofTransaction(req.params.id),
   });
 });
 export default router;

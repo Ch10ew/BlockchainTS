@@ -75,6 +75,7 @@ router.post('/login', async (req, res) => {
       username: username,
     },
   });
+  console.log(user);
   if (user) {
     const validPassword = await compare(password, user?.password);
     if (validPassword) {
@@ -82,10 +83,10 @@ router.post('/login', async (req, res) => {
       res.sendStatus(200).end();
       return;
     }
-    res.sendStatus(401).json({ error: 'Unauthorized' }).end();
+    res.sendStatus(401).end();
     return;
   }
-  res.sendStatus(404).json({ error: 'User not found' });
+  res.sendStatus(404).end();
 });
 
 router.get('/:id', async (req, res) => {
@@ -94,7 +95,7 @@ router.get('/:id', async (req, res) => {
       id: req.params.id,
     },
   });
-  if (!user) return res.sendStatus(404).json({ error: 'User not found' });
+  if (!user) return res.sendStatus(404).end();
   res.json(excludePassword(user, 'password'));
 });
 
