@@ -47,37 +47,49 @@ export const transferArtwork = async (
 };
 
 router.get('', (req, res) => {
+  let queryParams: any = [];
+  if (req.query) {
+    if (req.query.fromId) {
+      queryParams.push(req.query.fromId);
+    }
+    if (req.query.toId) {
+      queryParams.push(req.query.toId);
+    }
+    if (req.query.q) {
+      queryParams.push(
+        {
+          from: {
+            username: {
+              contains: req.query.q! as string,
+            },
+          },
+        },
+        {
+          to: {
+            username: {
+              contains: req.query.q! as string,
+            },
+          },
+        },
+        {
+          artwork: {
+            label: {
+              contains: req.query.q! as string,
+            },
+          },
+        }
+      );
+    }
+  }
   return prisma.transaction.findMany({
     include: {
       from: true,
       to: true,
       artwork: true,
     },
-    ...(req.query.q && {
+    ...(req.query && {
       where: {
-        OR: [
-          {
-            from: {
-              username: {
-                contains: req.query.q! as string,
-              },
-            },
-          },
-          {
-            to: {
-              username: {
-                contains: req.query.q! as string,
-              },
-            },
-          },
-          {
-            artwork: {
-              label: {
-                contains: req.query.q! as string,
-              },
-            },
-          },
-        ],
+        OR: queryParams,
       },
     }),
   });

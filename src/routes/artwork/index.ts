@@ -52,26 +52,38 @@ router.get('/:id', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
+  let queryParams: any = [];
+  if (req.query) {
+    if (req.query.q) {
+      queryParams.push(
+        {
+          label: {
+            contains: req.query.q! as string,
+          },
+        },
+        {
+          artist: {
+            username: {
+              contains: req.query.q! as string,
+            },
+          },
+        }
+      );
+    }
+    if (req.query.artistId) {
+      queryParams.push({ artistId: req.query.artistId });
+    }
+    if (req.query.ownerId) {
+      queryParams.push({ ownerId: req.query.ownerId });
+    }
+  }
   const artworks = await prisma.artwork.findMany({
     include: {
       artist: true,
     },
-    ...(req.query.q && {
+    ...(req.query && {
       where: {
-        OR: [
-          {
-            label: {
-              contains: req.query.q! as string,
-            },
-          },
-          {
-            artist: {
-              username: {
-                contains: req.query.q! as string,
-              },
-            },
-          },
-        ],
+        OR: queryParams,
       },
     }),
   });
