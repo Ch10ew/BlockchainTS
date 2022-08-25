@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { Blockchain } from '../../core/blockchain/Blockchain';
 import { transferArtwork } from '../transact';
+import { isEmpty } from 'lodash';
 
 type CreateArtworkData = {
   label: string;
@@ -53,7 +54,7 @@ router.get('/:id', async (req, res) => {
 
 router.get('/', async (req, res) => {
   let queryParams: any = [];
-  if (req.query) {
+  if (!isEmpty(req.query)) {
     if (req.query.q) {
       queryParams.push(
         {
@@ -81,17 +82,19 @@ router.get('/', async (req, res) => {
     include: {
       artist: true,
     },
-    ...(req.query && {
+    ...(!isEmpty(req.query) && {
       where: {
         OR: queryParams,
       },
     }),
   });
+  console.log(artworks);
   const arts = artworks.map((x) => {
     const art = JSON.parse(JSON.stringify(x));
     delete art.artist.password;
     return art;
   });
+  console.log(arts);
   res.json(arts).end();
 });
 
