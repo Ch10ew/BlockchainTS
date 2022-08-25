@@ -75,12 +75,11 @@ router.post('/login', async (req, res) => {
       username: username,
     },
   });
-  console.log(user);
   if (user) {
     const validPassword = await compare(password, user?.password);
     if (validPassword) {
       req.session.user = { id: user.id, role: user.userType };
-      res.sendStatus(200).end();
+      res.status(200).json(user).end();
       return;
     }
     res.sendStatus(401).end();
