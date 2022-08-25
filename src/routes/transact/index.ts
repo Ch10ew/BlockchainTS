@@ -156,9 +156,27 @@ router.get('/blockchain', (req, res) =>
   res.json(Blockchain.getInstance().chain)
 );
 
-router.get('/proof/:id', (req, res) => {
+router.get('/proof/:id', async (req, res) => {
+  const isValid = await Blockchain.getInstance().proofTransaction(
+    req.params.id
+  );
+  res.json({ isValid });
+});
+
+router.get('/cert/:id', async (req, res) => {
+  const latestTransaction = await prisma.transaction.findFirst({
+    orderBy: [{ createdAt: 'desc' }],
+    where: {
+      artworkId: req.params.id,
+    },
+    include: {
+      from: true,
+      to: true,
+    },
+  });
+  if (!latestTransaction) res.sendStatus(404);
   res.json({
-    isValid: Blockchain.getInstance().proofTransaction(req.params.id),
+    data: latestTransaction,
   });
 });
 export default router;
