@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import { PrismaClient, UserType } from '@prisma/client';
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import path from 'path';
-import { readdirSync } from 'fs';
+import { mkdirSync, readdirSync } from 'fs';
 
 declare module 'express-session' {
   interface SessionData {
@@ -18,11 +18,14 @@ declare module 'express-session' {
   }
 }
 
+mkdirSync(path.resolve(__dirname, `./public/upload`), {
+  recursive: true,
+});
+
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-console.log(path.resolve(__dirname, './public/uplaod'));
 app.use(
   session({
     secret: 'session secret yay bcd',
@@ -50,4 +53,4 @@ app.listen(port, () => {
   console.log('App listening at port ' + port);
 });
 
-process.on('uncaughtException', () => console.log('Nothing has happened UwU'));
+// process.on('uncaughtException', () => console.log('Nothing has happened UwU'));

@@ -1,8 +1,10 @@
 import express from 'express';
-import { Prisma, PrismaClient, User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
+import { Blockchain } from '../../core/blockchain/Blockchain';
+import { transferArtwork } from '../transact';
 
 type CreateArtworkData = {
   label: string;
@@ -91,20 +93,23 @@ router.post('/upload', upload.single('artworkImg'), async (req, res) => {
     res.sendStatus(500).end();
     return;
   }
+  console.log(Blockchain);
+
   const url = req.protocol + '://' + req.get('host');
   const { label }: CreateArtworkData = req.body;
   const artwork = await prisma.artwork.create({
     data: {
       id: path.basename(req.file?.filename as string),
       label,
-      artworkPath: url + '/public/upload/' + req.file?.filename,
+      artworkPath: url + '/image/' + req.file?.filename,
       artistId: userSession.id,
+      ownerId: userSession.id,
     },
   });
-  const art = JSON.parse(JSON.stringify(artwork));
-  delete art.artist.password;
   // TODO: blockchain
-  res.json(art).end();
+  const bc = Blockchain.getInstance();
+  transferArtwork(artwork, userSession.id, userSession.id);
+  res.json(artwork).end();
 });
 
 export default router;

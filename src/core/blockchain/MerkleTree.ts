@@ -1,5 +1,5 @@
 import { Transaction } from '@prisma/client';
-import Hasher from '@utils/hasher';
+import Hasher from '../../utils/hasher';
 
 export class MerkleNode {
   public hash: string | undefined;
@@ -21,25 +21,21 @@ export class MerkleTree {
   size: number | undefined;
   constructor(nodes: Transaction[]) {
     this.size = Math.ceil(Math.log2(nodes.length));
-    this.root = MerkleTree.buildTree(nodes);
+    this.root = MerkleTree.buildTree(
+      nodes.map((x) => new MerkleNode(undefined, undefined, x))
+    );
+    console.log(this.root);
   }
 
-  static buildTree(nodes: Transaction[]): MerkleNode {
+  static buildTree(nodes: MerkleNode[]): MerkleNode {
+    if (nodes.length === 1) return nodes[0];
     const nodeCopy = [...nodes];
     let finalNodes: MerkleNode[] = [];
-    if (!(nodes.length % 2)) nodeCopy.push(nodes[nodes.length - 1]);
+    if (nodes.length % 2 !== 0) nodeCopy.push(nodes[nodes.length - 1]);
 
-    for (let i = 0; i < nodeCopy.length; i++) {
-      finalNodes.push(new MerkleNode(undefined, undefined, nodeCopy[i]));
+    for (let j = 0; j < nodeCopy.length; j += 2) {
+      finalNodes.push(new MerkleNode(nodeCopy[j], nodeCopy[j + 1]));
     }
-
-    for (let i = 0; i < nodeCopy.length / 2; i++) {
-      const level: MerkleNode[] = [];
-      for (let j = 0; j < nodeCopy.length; j += 2) {
-        const node = new MerkleNode(finalNodes[j], finalNodes[j + 1]);
-      }
-      finalNodes = level;
-    }
-    return finalNodes[0];
+    return this.buildTree(finalNodes);
   }
 }

@@ -3,7 +3,7 @@ import { Prisma, PrismaClient, User } from '@prisma/client';
 import { compare, genSalt, hash } from 'bcrypt';
 import { LoginData } from 'src/common/type/loginType';
 import { Wallet } from '../../core/blockchain/Wallet';
-import { mkdir, writeFile } from 'fs';
+import { mkdir, mkdirSync, writeFile } from 'fs';
 import path from 'path';
 
 type UserSignUpInput = {
@@ -48,7 +48,9 @@ router.post('/signup', async (req, res) => {
   });
   // TODO: blockchain
 
-  mkdir(path.resolve(__dirname, `../../keys/${user.id}`), () => {});
+  mkdirSync(path.resolve(__dirname, `../../keys/${user.id}`), {
+    recursive: true,
+  });
   await Promise.all([
     writeFile(
       path.resolve(__dirname, `../../keys/${user.id}/public.pem`),

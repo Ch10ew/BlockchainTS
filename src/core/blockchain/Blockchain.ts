@@ -1,25 +1,27 @@
 import { Block } from './Block';
 import { MerkleTree } from './MerkleTree';
-import { writeFile } from 'fs';
-import { createVerify, Sign } from 'crypto';
+import { writeFile, writeFileSync } from 'fs';
+import { createVerify, KeyObject, Sign } from 'crypto';
 import path from 'path';
-import { getAllTransactions } from 'src/routes/transact';
+import { getAllTransactions } from '../../routes/transact';
 import { Transaction } from '@prisma/client';
 
 export class Blockchain {
-  static instance: Blockchain | undefined;
+  static instance = new Blockchain();
   chain: Block[] = [];
   genesis: Block | undefined;
 
   private constructor() {
     this.genesis = Block.generateGenesisBlock();
-    this.chain.push();
+    this.chain.push(this.genesis);
     this.distribute();
   }
 
   static getInstance() {
     if (this.instance) return this.instance;
-    return new Blockchain();
+    this.instance = new Blockchain();
+    console.log(this.instance);
+    return this.instance;
   }
 
   static fromJSON() {
@@ -30,24 +32,29 @@ export class Blockchain {
 
   async addBlock(
     newTransaction: Transaction,
-    senderPublicKey: string,
-    signature: string
+    senderPublicKey: KeyObject,
+    signature: string | Buffer
   ): Promise<void> {
     const verifier = createVerify('SHA256');
     verifier.update(JSON.stringify(newTransaction));
 
-    const isValid = verifier.verify(senderPublicKey, signature);
-
+    const isValid = verifier.verify(
+      senderPublicKey,
+      signature as string,
+      'base64'
+    );
     if (isValid) {
+      const trans = await getAllTransactions();
       this.chain.push(
         new Block(
           this.getSize(),
           new Date(),
           newTransaction,
           this.lastBlock().getHash(),
-          new MerkleTree(await getAllTransactions())
+          new MerkleTree(trans)
         )
       );
+      this.distribute();
     }
   }
 
@@ -60,10 +67,6 @@ export class Blockchain {
   }
 
   distribute() {
-    writeFile(
-      path.resolve('./blockchain.json'),
-      JSON.stringify(this),
-      () => {}
-    );
+    writeFileSync(path.resolve('./blockchain.json'), JSON.stringify(this));
   }
 }

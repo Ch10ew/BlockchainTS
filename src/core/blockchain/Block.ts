@@ -1,4 +1,4 @@
-import Hasher from '@utils/hasher';
+import Hasher from '../../utils/hasher';
 import { IUser } from '../user/user';
 import { v4 } from 'uuid';
 import { createHash } from 'crypto';

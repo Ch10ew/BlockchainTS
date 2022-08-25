@@ -28,6 +28,7 @@ model User {
   toTransaction   Transaction[] @relation("toUser")
   fromRequest     Request[]     @relation("fromRequest")
   toRequest       Request[]     @relation("toRequest")
+  OwnedArtwork    Artwork[]     @relation("artOwner")
 }
 
 model Artwork {
@@ -37,13 +38,14 @@ model Artwork {
 
   artistId    String
   artist      User          @relation(fields: [artistId], references: [id])
+  ownerId     String
+  owner       User          @relation(name: "artOwner", fields: [ownerId], references: [id])
   Transaction Transaction[]
   Request     Request[]
 }
 
 model Transaction {
-  id             String @id @default(uuid())
-  blockchainHash String
+  id String @id @default(uuid())
 
   artworkId String
   artwork   Artwork @relation(fields: [artworkId], references: [id])
@@ -55,7 +57,7 @@ model Transaction {
 
 model Request {
   id     String        @id @default(uuid())
-  status RequestStatus
+  status RequestStatus @default(PENDING)
 
   artworkId String
   artwork   Artwork @relation(fields: [artworkId], references: [id])

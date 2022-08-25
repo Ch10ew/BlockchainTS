@@ -29,6 +29,6 @@ export default class Hasher {
   }
 
   private static objectChecker(target: HashTarget): string {
-    return typeof target === 'object' ? target.toString() : target;
+    return typeof target !== 'string' ? JSON.stringify(target) : target;
   }
 }

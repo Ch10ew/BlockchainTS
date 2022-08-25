@@ -8,7 +8,7 @@
     "build:start": "npm run build && npm run start:prod",
     "start:prod": "node ./dist/index.js",
     "build:dev": "tsc -w",
-    "run:dev": "npx nodemon ./src/index.ts"
+    "start:dev": "tsc-watch --onSuccess \"npm run start:prod\""
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "prisma": "^4.2.1",
     "resolve-tspaths": "^0.6.0",
     "ts-node": "^10.9.1",
+    "tsc-watch": "^5.0.3",
     "typescript": "^4.7.4"
   },
   "dependencies": {
