@@ -93,6 +93,17 @@ export class Blockchain {
     writeFileSync(path.resolve('./blockchain.json'), JSON.stringify(this));
   }
 
+  public proveBlockchain() {
+    const ans = true;
+    for (let i = 0; i < this.chain.length; i++) {
+      if (i === this.chain.length - 1) continue;
+      if (this.chain[i].getHash() !== this.chain[i + 1].previousBlockHash) {
+        return false;
+      }
+    }
+    return ans;
+  }
+
   public async proofTransaction(transactionId: string) {
     const [transaction, allTransactions] = await Promise.all([
       findTransactionById(transactionId),

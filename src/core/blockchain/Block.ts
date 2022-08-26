@@ -20,7 +20,7 @@ export class Block {
       0,
       date,
       null,
-      Hasher.md5(String(date) + null + '0' + v4())
+      Hasher.sha256(String(date) + null + '0' + v4())
     );
   }
 
