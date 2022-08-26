@@ -102,16 +102,18 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/upload', upload.single('artworkImg'), async (req, res) => {
-  const userSession = req.session.user;
-  if (!userSession || userSession.role !== 'ARTIST') {
-    res.sendStatus(401).end();
-    return;
-  }
+  if (!req.body.userId) return res.sendStatus(404).end();
+
   if (!req.file) {
     res.sendStatus(500).end();
     return;
   }
-
+  const user = await prisma.user.findUnique({
+    where: {
+      id: req.body.userId,
+    },
+  });
+  if (!user) return res.sendStatus(404).end();
   const url = req.protocol + '://' + req.get('host');
   const { label }: CreateArtworkData = req.body;
   const artwork = await prisma.artwork.create({
@@ -119,13 +121,13 @@ router.post('/upload', upload.single('artworkImg'), async (req, res) => {
       id: path.parse(req.file?.filename as string).name,
       label,
       artworkPath: url + '/image/' + req.file?.filename,
-      artistId: userSession.id,
-      ownerId: userSession.id,
+      artistId: user.id,
+      ownerId: user.id,
     },
   });
   // TODO: blockchain
   const bc = Blockchain.getInstance();
-  transferArtwork(artwork, userSession.id, userSession.id);
+  transferArtwork(artwork, user.id, user.id);
   res.json(artwork).end();
 });
 
